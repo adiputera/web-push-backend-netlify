@@ -1,39 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Push Demo with Netlify + Supabase</title>
+    <meta charset="UTF-8" />
+    <title>Push Demo with Netlify + Supabase</title>
 </head>
+
 <body>
-  <h2>Web Push Demo</h2>
-  <button onclick="subscribe()">Enable Notifications</button>
+    <h2>Web Push Demo</h2>
+    <button onclick="subscribe()">Enable Notifications</button>
 
-  <script>
-    const vapidPublicKey = 'YOUR_PUBLIC_VAPID_KEY';
+    <script>
+        const vapidPublicKey = process.env.PUBLIC_VAPID_KEY;
 
-    async function subscribe() {
-      const registration = await navigator.serviceWorker.register('/sw.js');
+        async function subscribe() {
+            const registration = await navigator.serviceWorker.register('/sw.js');
 
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
-      });
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+            });
 
-      await fetch('/.netlify/functions/save-subscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(subscription)
-      });
+            await fetch('/.netlify/functions/save-subscription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(subscription)
+            });
 
-      alert('Subscription saved!');
-    }
+            alert('Subscription saved!');
+        }
 
-    function urlBase64ToUint8Array(base64String) {
-      const padding = '='.repeat((4 - base64String.length % 4) % 4);
-      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-      const raw = atob(base64);
-      return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
-    }
-  </script>
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+            const raw = atob(base64);
+            return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+        }
+    </script>
 </body>
+
 </html>

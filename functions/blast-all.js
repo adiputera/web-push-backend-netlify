@@ -2,13 +2,13 @@ const fetch = require('node-fetch');
 const webpush = require('web-push');
 
 exports.handler = async function (event, context) {
-    const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
-    const SUPABASE_API_KEY = 'YOUR_SERVICE_ROLE_KEY';
-    const VAPID_PUBLIC_KEY = 'YOUR_PUBLIC_VAPID_KEY';
-    const VAPID_PRIVATE_KEY = 'YOUR_PRIVATE_VAPID_KEY';
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_API_KEY = process.env.SUPABASE_KEY;
+    const VAPID_PUBLIC_KEY = process.env.PUBLIC_VAPID_KEY;
+    const VAPID_PRIVATE_KEY = process.env.PRIVATE_VAPID_KEY;
 
     webpush.setVapidDetails(
-        'mailto:example@example.com',
+        'mailto:yusuf@adiputeral.id',
         VAPID_PUBLIC_KEY,
         VAPID_PRIVATE_KEY
     );
