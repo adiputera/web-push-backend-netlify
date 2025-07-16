@@ -1,0 +1,12 @@
+{
+  "name": "web-push-backend-netlify",
+  "version": "1.0.0",
+  "description": "Web Push Notification with Netlify Functions and Supabase",
+  "scripts": {
+    "start": "netlify dev"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "web-push": "^3.5.0"
+  }
+}
