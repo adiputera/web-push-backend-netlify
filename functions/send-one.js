@@ -8,7 +8,7 @@ exports.handler = async function (event, context) {
         };
     }
 
-    const { subscription, title, body, image } = JSON.parse(event.body || "{}");
+    const { subscription, title, body, image, url, actions } = JSON.parse(event.body || "{}");
 
     if (!subscription || !title || !body) {
         return {
@@ -17,16 +17,16 @@ exports.handler = async function (event, context) {
         };
     }
 
-    const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
-    const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
+    const VAPID_PUBLIC_KEY = process.env.PUBLIC_VAPID_KEY;
+    const VAPID_PRIVATE_KEY = process.env.PRIVATE_VAPID_KEY;
 
     webpush.setVapidDetails(
-        "mailto:example@example.com",
-        VAPID_PUBLIC_KEY,
-        VAPID_PRIVATE_KEY
-    );
+            "mailto:yusuf@adiputera.id",
+            VAPID_PUBLIC_KEY,
+            VAPID_PRIVATE_KEY
+        );
 
-    const payload = JSON.stringify({ title, body, image });
+    const payload = JSON.stringify({ title, body, image, url, actions });
 
     try {
         await webpush.sendNotification(subscription, payload, { TTL: 86400 });

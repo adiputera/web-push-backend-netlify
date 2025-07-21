@@ -9,7 +9,7 @@ exports.handler = async function (event, context) {
         };
     }
 
-    const { title, body, image } = JSON.parse(event.body || "{}");
+    const { title, body, image, url, actions } = JSON.parse(event.body || "{}");
 
     if (!title || !body) {
         return {
@@ -38,7 +38,7 @@ exports.handler = async function (event, context) {
 
     const subscriptions = await response.json();
 
-    const payload = JSON.stringify({ title, body, image });
+    const payload = JSON.stringify({ title, body, image, url, actions });
 
     const results = await Promise.allSettled(subscriptions.map(sub =>
         webpush.sendNotification(sub, payload, { TTL: 86400 })
@@ -52,5 +52,8 @@ exports.handler = async function (event, context) {
             message: "Notifications sent",
             results,
         }),
+        headers: {
+            'Content-Type': 'application/json'
+        },
     };
 };
