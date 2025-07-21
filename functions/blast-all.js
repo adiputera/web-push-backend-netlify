@@ -38,7 +38,14 @@ exports.handler = async function (event, context) {
 
     const subscriptions = await response.json();
 
-    const payload = JSON.stringify({ title, body, image, url, actions });
+    const payload = JSON.stringify({
+        title,
+        body,
+        image,
+        actions,
+        data: { url }
+    });
+
 
     const results = await Promise.allSettled(subscriptions.map(sub =>
         webpush.sendNotification(sub, payload, { TTL: 86400 })
