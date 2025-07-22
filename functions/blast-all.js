@@ -1,5 +1,6 @@
 const webpush = require("web-push");
 const fetch = require("node-fetch");
+const verifyToken = require('../utils/jwtUtils');
 
 exports.handler = async function (event, context) {
     if (event.httpMethod !== "POST") {
@@ -9,12 +10,30 @@ exports.handler = async function (event, context) {
         };
     }
 
+    const authHeader = event.headers.Authorization || event.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+        const token = authHeader.split(" ")[1];
+        const verified = verifyToken(token);
+        if (!verified) {
+            return {
+                statusCode: 401,
+                body: JSON.stringify({ error: "Unauthorized" }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+        }
+    }
+
     const { title, body, image, url, actions } = JSON.parse(event.body || "{}");
 
     if (!title || !body) {
         return {
             statusCode: 400,
             body: JSON.stringify({ message: "Missing title or body" }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
         };
     }
 
@@ -46,7 +65,6 @@ exports.handler = async function (event, context) {
         data: { url }
     });
 
-
     const results = await Promise.allSettled(subscriptions.map(sub =>
         webpush.sendNotification(sub, payload, { TTL: 86400 })
             .then(() => ({ success: true }))
@@ -63,4 +81,4 @@ exports.handler = async function (event, context) {
             'Content-Type': 'application/json'
         },
     };
-};
+}

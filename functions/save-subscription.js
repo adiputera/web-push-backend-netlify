@@ -1,11 +1,11 @@
 const fetch = require('node-fetch');
 
-exports.handler = async function (event, context) {
-    const allowedOrigins = [
-        'http://localhost:8080',
-        'https://adiputera.github.io'
-    ];
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
 
+exports.handler = async function (event, context) {
     const origin = event.headers.origin || '';
     const isAllowed = allowedOrigins.includes(origin);
 
@@ -17,7 +17,7 @@ exports.handler = async function (event, context) {
                     'Access-Control-Allow-Origin': origin,
                     'Vary': 'Origin',
                 }),
-                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Headers': event.headers['access-control-request-headers'] || 'Content-Type',
                 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
             },
         };
