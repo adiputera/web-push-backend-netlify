@@ -34,7 +34,7 @@ exports.handler = async function (event, context) {
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_API_KEY = process.env.SUPABASE_KEY;
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/subscriptions`, {
         method: 'POST',
         headers: {
             'apikey': SUPABASE_API_KEY,
@@ -48,8 +48,6 @@ exports.handler = async function (event, context) {
         })
     });
 
-    const data = await res.json();
-
     return {
         statusCode: 200,
         headers: {
@@ -59,6 +57,6 @@ exports.handler = async function (event, context) {
                 'Vary': 'Origin',
             }),
         },
-        body: JSON.stringify({ success: true, data })
+        body: JSON.stringify({ success: true })
     };
 };
