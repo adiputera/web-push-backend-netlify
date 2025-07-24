@@ -1,5 +1,5 @@
-# Web Push Backend Using Netlify Functions
-This project implements a backend for Web Push notifications using Netlify Functions. It allows you to send push notifications to subscribed clients from your serverless backend.
+# VAPID Web Push Backend Using Netlify Functions
+This project implements a backend for VAPID Web Push notifications using Netlify Functions. It allows you to send push notifications to subscribed clients from your serverless backend. Currently it only supports VAPID-based web push notification, so iOS devices is out of order.
 
 ## Dependencies
 - [node-jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
@@ -69,21 +69,47 @@ Deploy to Netlify using the CLI or by connecting your repository to Netlify.
     ```JavaScript
     const vapidPublicKey = "YOUR_VAPID_PUBLIC_KEY";
 
-    async function subscribe() {
-        const registration = await navigator.serviceWorker.register('/sw.js');
+    function askNotificationPermission() {
+        if (!("Notification" in window)) {
+            console.error("Notifications not supported in this browser");
+            return;
+        }
 
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                navigator.serviceWorker.getRegistration().then(registration => {
+                    if (!registration) {
+                        return navigator.serviceWorker.register("/sw.js");
+                    }
+                    return registration;
+                }).then(registration => {
+                    if (!registration) {
+                        console.error("Service Worker registration failed.");
+                        return;
+                    }
+                    registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+                    }).then(subscription => {
+                        if (!subscription) {
+                            console.error("Failed to subscribe to push notifications.");
+                            return;
+                        }
+                        fetch('/api/subscribe', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(subscription)
+                        });
+                    }).catch(error => {
+                        console.error("Failed to subscribe:", error);
+                    });
+                }).catch(error => {
+                    console.error("Service Worker registration not found:", error);
+                });
+            } else if (permission === "denied" || permission === "default") {
+                console.warn("Notification permission denied or defaulted.");
+            }
         });
-
-        await fetch('/api/subscribe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(subscription)
-        });
-
-        alert('Subscription saved!');
     }
 
     function urlBase64ToUint8Array(base64String) {
@@ -172,6 +198,34 @@ Deploy to Netlify using the CLI or by connecting your repository to Netlify.
                 "title": "Dismiss"
             }
         ]
+    }
+    ```
+
+- Example on how to send push notification to single subscriber:
+    Send [POST] to `/api/push-notification`, with payload (don't forget the bearer token).
+    To get the subscription object, you can check the database
+    ```JSON
+    {
+        "title": "Some Title",
+        "body": "Some body",
+        "url": "https://example.com",
+        "actions": [
+            {
+                "action": "open_url",
+                "title": "Open"
+            },
+            {
+                "action": "dismiss",
+                "title": "Dismiss"
+            }
+        ],
+        "subscription": {
+            "endpoint": "https://the-subscription-endpoint",
+            "keys": {
+                "p256dh": "p256dh keys",
+                "auth": "auth keys"
+            }
+        }
     }
     ```
 
